@@ -1,4 +1,4 @@
-﻿using API.IRepositories;
+﻿using API.Specification;
 using Microsoft.EntityFrameworkCore;
 using ShopNet.Data;
 using ShopNet.Entities;
@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace API.Repositories
+namespace API.Specification
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : IGenericRepository
     {
         private readonly StoreContext _context;
 

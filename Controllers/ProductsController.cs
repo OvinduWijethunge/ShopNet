@@ -1,4 +1,6 @@
-﻿using API.IRepositories;
+﻿using API.DTOs;
+using API.Specification;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,24 +17,34 @@ namespace ShopNet.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        
-        private readonly IProductRepository _repo;
+        private readonly IGenericRepository<Product> _productRepo;
+        private IGenericRepository<ProductBrand> _brandRepo;
+        private readonly IGenericRepository<ProductType> _typeRepo;
+        private readonly IMapper _mapper;
 
-        public ProductsController(IProductRepository repo)
+        public ProductsController(IGenericRepository<Product> productRepo, IGenericRepository<ProductBrand> brandRepo, IGenericRepository<ProductType> typeRepo, IMapper mapper)
         {
-            _repo = repo;
+            _productRepo = productRepo;
+            _brandRepo = brandRepo;
+            _typeRepo = typeRepo;
+            _mapper = mapper;
         }
+
+
         [HttpGet]
-        public  async Task< ActionResult<List<Product>>> GetProducts()
+        public  async Task< ActionResult<IReadOnlyList<ProductDTO>>> GetProducts()
         {
-            var products_list = await _repo.GetProductsAsync();
-            return Ok(products_list);
+            var spec = new ProductWithTypeAndBrandSpecification();
+            var products_list = await _productRepo.ListAsync(spec);
+            return Ok(_mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductDTO>>(products_list));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id) 
+        public async Task<ActionResult<ProductDTO>> GetProduct(int id) 
         {
-            return await _repo.GetProductByIdAsync(id);
+            var spec = new ProductWithTypeAndBrandSpecification(id);
+            var _product =  await _productRepo.GetEntityWithSpec(spec);
+            return _mapper.Map<Product, ProductDTO>(_product);
         } 
     }
 }
